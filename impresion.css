@@ -1,0 +1,59 @@
+/* =====================================================================
+   impresion.css — Hoja de secuencia (tamaño carta, vertical)
+   En pantalla solo se ve la ventana de selección; al imprimir se oculta
+   la aplicación y solo sale el área #printArea.
+   ===================================================================== */
+
+/* ---------- ventana de selección ---------- */
+.pr-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+.pr-grid .lbl{flex-direction:column;align-items:stretch;gap:5px}
+.pr-grid .input{width:100%}
+.pr-sum{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px}
+.pr-k{flex:1;min-width:90px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;background:rgba(8,19,42,.6)}
+.pr-k b{font-size:22px;color:#F4F8FF}.pr-k span{font-size:11.5px;color:var(--muted)}
+.pr-k.pe b{color:#FBBF5A}.pr-k.sq b{color:#6EE7B7}.pr-k.si b{color:#FF8A8A}
+@media (max-width:760px){.pr-grid{grid-template-columns:1fr 1fr}}
+
+/* ---------- área de impresión ---------- */
+#printArea{display:none}
+@page{size:letter portrait;margin:9mm 8mm}
+@media print{
+  :root{color-scheme:light !important}
+  html,body{background:#fff !important;color:#000;width:auto !important;min-width:0 !important;margin:0 !important;padding:0 !important;display:block !important}
+  #printArea{width:100%}
+  body>*:not(#printArea){display:none !important}
+  #printArea{display:block}
+  .ppage{box-sizing:border-box;overflow:hidden;break-after:page;page-break-after:always;font-family:"Segoe UI",Arial,sans-serif;color:#111;width:100%;height:259mm;display:flex;flex-direction:column;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ppage:last-child{break-after:auto;page-break-after:auto}
+  .phead{display:flex;align-items:center;gap:14px;border-bottom:2.5pt solid #3B6AF5;padding-bottom:6px}
+  .plogo{height:40px;width:auto}
+  .ptitle{flex:1}
+  .ptitle h1{margin:0;font-size:19pt;font-weight:700;color:#0A1A3A;letter-spacing:.02em}
+  .pcomp{display:inline-block;margin-top:2px;font-size:11pt;font-weight:700;color:#fff;background:#0A1A3A;border-radius:4px;padding:1px 10px;letter-spacing:.06em;text-transform:uppercase}
+  .pqv{padding-right:2px;text-align:right;font-size:10pt;font-weight:700;letter-spacing:.24em;color:#0A1A3A}
+  .pqv small{display:block;font-size:6.5pt;letter-spacing:.14em;color:#5D7084;font-weight:600}
+  .pinfo{width:100%;border-collapse:collapse;margin:7px 0 8px}
+  .pinfo td{border:0.75pt solid #C9D4E3;padding:3px 7px;vertical-align:top}
+  .pinfo span{display:block;font-size:6.8pt;text-transform:uppercase;letter-spacing:.08em;color:#5D7084}
+  .pinfo b{font-size:9.5pt;color:#0A1A3A}
+  .ptab{width:100%;border-collapse:collapse;table-layout:fixed;font-size:9pt}
+  .ptab th{background:#0A1A3A;color:#fff;font-size:6.8pt;text-transform:uppercase;letter-spacing:.02em;padding:5px 3px;text-align:left;border:0.75pt solid #0A1A3A;line-height:1.15}
+  .ptab th small{display:block;font-size:6pt;font-weight:400;opacity:.8;text-transform:none;letter-spacing:0}
+  .ptab td{height:6.35mm;padding:0 4px;border-bottom:0.6pt solid #C8D2DF;border-left:0.4pt solid #E1E7EF;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ptab td:last-child{border-right:0.4pt solid #E1E7EF}
+  .ptab tbody tr:nth-child(even) td{background:#EEF2F7}
+  .ptab td.n{color:#5D7084;font-size:8pt;text-align:center}
+  .ptab td.j{font-weight:700;font-size:9.8pt;color:#0A1A3A}
+  .ptab td.j em{font-style:normal;display:inline-block;min-width:14px;text-align:center;margin-left:3px;font-size:8.5pt;border:0.75pt solid #0A1A3A;border-radius:3px;padding:0 3px}
+  .ptab td.si{font-weight:700;color:#9B2C2C;font-size:6.8pt;line-height:1.05;white-space:normal;letter-spacing:.02em}
+  .ptab tr.sin td{background:#F7E4E4 !important}
+  .ptab td.sq{font-weight:700;color:#1B6B45}
+  .ptab td.w{border-left:0.75pt solid #9AA8BC;border-right:0.75pt solid #9AA8BC}
+  .ptab td.c{text-align:center}
+  .ptab td.sm{font-size:7.6pt;padding:0 3px}
+  .pbox{display:inline-block;width:4.2mm;height:4.2mm;border:1pt solid #0A1A3A;border-radius:1pt;background:#fff;vertical-align:middle}
+  .pfoot{margin-top:auto;display:flex;flex-wrap:wrap;gap:6px 18px;padding-top:8px;border-top:0.75pt solid #C9D4E3}
+  .pfoot div{flex:1;display:flex;align-items:flex-end;gap:6px;font-size:8.5pt;color:#333;min-height:8mm}
+  .pfoot div i{flex:1;border-bottom:0.75pt solid #333;height:1px}
+  .pfoot p{flex-basis:100%;margin:2px 0 0;font-size:7pt;color:#5D7084;text-align:right;letter-spacing:.06em}
+}
