@@ -1,0 +1,122 @@
+/* =====================================================================
+   tema-claro.css — QORVEX modo WHITE (fondo claro + azul rey)
+   El modo BLACK es qorvex.css tal cual. La barra superior y el bloque del
+   logo se quedan oscuros para que el logotipo QORVEX no cambie.
+   ===================================================================== */
+html[data-theme="light"]{
+  --ink:#14213D;--muted:#5B6472;--line:#D6DCE6;--bg:#F4F6F9;--panel:#FFFFFF;
+  --navy:#12296F;--navy2:#1F3FA8;--sea:#1F3FA8;--sea2:#2D52C8;--sea-bg:rgba(31,63,168,.08);
+  --q-cyan:#1F3FA8;--q-neon:#1F3FA8;--q-blue:#1F3FA8;
+  --ok:#1B8A57;--ok-bg:#E3F5EC;--bad:#B42318;--bad-bg:#F9D4D4;--warn:#B86500;--warn-bg:#FFF2DD;
+  color-scheme:light;
+}
+html[data-theme="light"] body{background:linear-gradient(180deg,#F4F6F9,#EDF1F7) fixed !important;color:#14213D}
+html[data-theme="light"] a{color:#1F3FA8}
+
+/* barra superior: se mantiene oscura (logo intacto) con línea azul rey */
+html[data-theme="light"] .top{background:linear-gradient(90deg,#0A1A3A,#0D2150 60%,#12296F) !important;border-bottom:1px solid #1F3FA8}
+html[data-theme="light"] .top::after{background:linear-gradient(90deg,transparent,#4F74F0 30%,#4F74F0 70%,transparent)}
+
+/* pestañas */
+html[data-theme="light"] .tabs{background:rgba(255,255,255,.96) !important;border-bottom:1px solid #D6DCE6}
+html[data-theme="light"] .tab{color:#5B6472}
+html[data-theme="light"] .tab small{color:#8A94A6}
+html[data-theme="light"] .tab:hover{color:#12296F}
+html[data-theme="light"] .tab.on{color:#1F3FA8;border-bottom-color:#1F3FA8;background:linear-gradient(180deg,transparent,rgba(31,63,168,.06))}
+html[data-theme="light"] .tab.on small{color:#4A5568}
+
+/* botones y campos */
+html[data-theme="light"] .btn{background:#FFFFFF;border:1px solid #C9D1DE;color:#14213D}
+html[data-theme="light"] .btn:hover{border-color:#1F3FA8;color:#12296F;box-shadow:0 0 0 3px rgba(31,63,168,.12)}
+html[data-theme="light"] .btn.primary{background:linear-gradient(180deg,#2D52C8,#1F3FA8);border-color:#1F3FA8;color:#FFFFFF;box-shadow:0 6px 16px rgba(31,63,168,.25)}
+html[data-theme="light"] .btn.primary:hover{color:#FFFFFF;box-shadow:0 8px 22px rgba(31,63,168,.35)}
+html[data-theme="light"] .btn.danger{background:#FFF5F5;color:#B42318;border-color:#F3B4B4}
+html[data-theme="light"] .top .btn.ghost{color:#E6EDFF;border-color:rgba(255,255,255,.35);background:transparent}
+html[data-theme="light"] .top .btn.save{background:#FFFFFF;color:#12296F;border-color:#FFFFFF}
+html[data-theme="light"] .top .btn.save.on{background:#4F74F0;border-color:#4F74F0;color:#FFFFFF;box-shadow:0 0 0 3px rgba(79,116,240,.3)}
+html[data-theme="light"] .input{background:#FFFFFF;border:1px solid #C9D1DE;color:#14213D}
+html[data-theme="light"] .input::placeholder{color:#97A3B6}
+html[data-theme="light"] .input:focus{border-color:#1F3FA8;box-shadow:0 0 0 3px rgba(31,63,168,.15)}
+html[data-theme="light"] select.input option{background:#FFFFFF;color:#14213D}
+html[data-theme="light"] input[type=date]{color-scheme:light}
+html[data-theme="light"] input[type=checkbox],html[data-theme="light"] input[type=radio]{accent-color:#1F3FA8}
+
+/* paneles */
+html[data-theme="light"] .ptitle h1{color:#12296F}
+html[data-theme="light"] .ptitle h1 small{color:#5B6472}
+html[data-theme="light"] .panel,html[data-theme="light"] .fcard,html[data-theme="light"] .filters,html[data-theme="light"] .kpi,html[data-theme="light"] .hero,
+html[data-theme="light"] .h-panel,html[data-theme="light"] .mod,html[data-theme="light"] .rep{background:#FFFFFF;border:1px solid #D6DCE6;box-shadow:0 1px 2px rgba(18,41,111,.05),0 6px 18px rgba(18,41,111,.07);color:#14213D}
+html[data-theme="light"] .hero h1,html[data-theme="light"] .fh b,html[data-theme="light"] .kpi b,html[data-theme="light"] .m-h h3{color:#12296F}
+html[data-theme="light"] .fcard{border-left:3px solid #C9D1DE}html[data-theme="light"] .fcard.ok{border-left-color:#1F3FA8}
+html[data-theme="light"] .kpi{border-left:3px solid #1F3FA8}
+html[data-theme="light"] .kpi span{color:#5B6472}
+html[data-theme="light"] .tag{background:#EEF1F6;color:#5B6472}html[data-theme="light"] .tag.w{background:rgba(31,63,168,.1);color:#1F3FA8}
+html[data-theme="light"] .note{background:#F5F7FC;border-color:#C9D4EC;color:#4A5568}
+html[data-theme="light"] .banner.ok{background:#E3F5EC;color:#1B6B45}
+html[data-theme="light"] .warn{color:#7A4600}
+html[data-theme="light"] .empty,html[data-theme="light"] .muted{color:#5B6472}
+html[data-theme="light"] .chip{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);color:#E6EDFF}
+
+/* tablas: blancas con encabezado azul marino y línea azul rey */
+html[data-theme="light"] .tw{background:#FFFFFF;border:1px solid #D6DCE6;box-shadow:0 6px 18px rgba(18,41,111,.07)}
+html[data-theme="light"] .t th{background:#12296F;color:#FFFFFF;border-bottom:2px solid #4F74F0}
+html[data-theme="light"] .t tr:hover td{background:#EAF0FF !important}
+html[data-theme="light"] .t.raw td.hit{color:#1F3FA8;background:#EAF0FF}
+html[data-theme="light"] .t.raw th .so{color:#9DB4FF}
+html[data-theme="light"] .t.raw tr.fl .input.on{border-color:#1F3FA8;background:#EEF3FF}
+html[data-theme="light"] #tw td[data-ed]:hover{box-shadow:inset 0 0 0 2px #1F3FA8}
+html[data-theme="light"] .est i.on{background:#1F3FA8}
+html[data-theme="light"] .seg{border-color:#C9D1DE}html[data-theme="light"] .seg button{background:#FFFFFF;color:#5B6472}html[data-theme="light"] .seg button.on{background:#1F3FA8;color:#FFFFFF}
+html[data-theme="light"] .pager{color:#5B6472}
+html[data-theme="light"] .rchip{background:#FFFFFF;border-color:#C9D1DE;color:#4A5568}html[data-theme="light"] .rchip b{color:#12296F}
+html[data-theme="light"] .rchip.on{border-color:#1F3FA8;color:#1F3FA8;background:#EEF3FF}
+
+/* dashboard */
+html[data-theme="light"] .dpanel,html[data-theme="light"] .gcard{border-color:#D6DCE6}
+html[data-theme="light"] .gcard{border-left:5px solid #1F3FA8}
+html[data-theme="light"] .dpanel h3,html[data-theme="light"] .gh b,html[data-theme="light"] .gv,html[data-theme="light"] .run b{color:#12296F}
+html[data-theme="light"] .dpanel .btn.primary{color:#FFFFFF}
+
+/* INICIO: el bloque del logo se queda oscuro; lo demás claro */
+html[data-theme="light"] .mod::before{background:linear-gradient(90deg,#1F3FA8,transparent)}
+html[data-theme="light"] .mod:hover{border-color:#1F3FA8;box-shadow:0 12px 30px rgba(18,41,111,.12)}
+html[data-theme="light"] .mod .mc{color:#1F3FA8}
+html[data-theme="light"] .mod .mt,html[data-theme="light"] .mod .ms{color:#5B6472}
+html[data-theme="light"] .mod .mv{color:#12296F}
+html[data-theme="light"] .mod .mv.none{color:#97A3B6}
+html[data-theme="light"] .mod .ms b{color:#14213D}
+html[data-theme="light"] .h-panel h3{color:#1F3FA8}
+html[data-theme="light"] .cbar .tr{background:#E6EBF5}
+html[data-theme="light"] .cbar .tr i{background:linear-gradient(90deg,#12296F,#2D52C8);box-shadow:none}
+html[data-theme="light"] .cbar span:last-child{color:#14213D}
+html[data-theme="light"] .flist div{border-bottom-color:#E6EBF5}
+html[data-theme="light"] .dot.on{background:#1F3FA8;box-shadow:none}
+html[data-theme="light"] .h-empty{border-color:#C9D4EC;color:#5B6472}
+html[data-theme="light"] .rep .mc{color:#1F3FA8}html[data-theme="light"] .rep h3{color:#12296F}
+
+/* botones secundarios de la barra (siguen sobre fondo oscuro) */
+html[data-theme="light"] .sbtn{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.25);color:#C9D6F2}
+html[data-theme="light"] .sbtn:hover{border-color:#9DB4FF;color:#FFFFFF}
+html[data-theme="light"] .sbtn.on{border-color:#9DB4FF;color:#FFFFFF;background:rgba(79,116,240,.35);box-shadow:none}
+
+/* modal, avisos */
+html[data-theme="light"] .m-bg{background:rgba(10,26,58,.45)}
+html[data-theme="light"] .m{background:#FFFFFF;border:1px solid #D6DCE6;color:#14213D;box-shadow:0 30px 70px rgba(10,26,58,.35)}
+html[data-theme="light"] .opt{border-color:#D6DCE6}html[data-theme="light"] .opt:hover{border-color:#1F3FA8}
+html[data-theme="light"] .res.ok{background:#E3F5EC;color:#145C3B}html[data-theme="light"] .res.bad{background:#F9D4D4;color:#9B2C2C}
+html[data-theme="light"] .pr-k{background:#F5F7FC;border-color:#D6DCE6}html[data-theme="light"] .pr-k b{color:#12296F}
+html[data-theme="light"] .pr-k.pe b{color:#B86500}html[data-theme="light"] .pr-k.sq b{color:#1B8A57}html[data-theme="light"] .pr-k.si b{color:#B42318}
+html[data-theme="light"] .toast{background:#12296F;border-color:#1F3FA8}
+html[data-theme="light"] .busy{background:rgba(244,246,249,.75)}
+html[data-theme="light"] .busy div{background:#FFFFFF;border-color:#D6DCE6;color:#14213D}
+html[data-theme="light"] .busy i{border-color:rgba(31,63,168,.15);border-top-color:#1F3FA8}
+html[data-theme="light"] .foot{background:#FFFFFF;border-top:1px solid #D6DCE6;color:#8A94A6}
+html[data-theme="light"] .foot b{color:#1F3FA8}
+
+/* selector de modo */
+.thm{display:inline-flex;border:1px solid rgba(255,255,255,.28);border-radius:8px;overflow:hidden;flex:none}
+.thm button{border:0;background:transparent;color:#C9D6F2;font:700 11px "Bahnschrift","Segoe UI",sans-serif;letter-spacing:.14em;padding:0 10px;height:30px;cursor:pointer}
+.thm button.on{background:#E6EDFF;color:#0A1A3A}
+html[data-theme="light"] .thm button.on{background:#4F74F0;color:#FFFFFF}
+html[data-theme="light"] .top .ver{color:#9DB4FF;border-color:#4F74F0;background:rgba(79,116,240,.18)}
+html[data-theme="light"] .top .bn i,html[data-theme="light"] .top .bt small{color:#22D3EE}
