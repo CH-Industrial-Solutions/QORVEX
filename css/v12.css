@@ -1,0 +1,59 @@
+/* =====================================================================
+   v12.css — Productividad, Configuración y modo Editor / Consulta
+   (los paneles .dpanel son blancos en ambos temas, igual que las tablas)
+   ===================================================================== */
+/* Modo en la barra superior */
+.top .chip.mode{display:inline-flex !important;align-items:center;gap:6px;font-weight:800;letter-spacing:.06em;font-size:12px;cursor:pointer;border-width:1px;border-style:solid}
+.top .chip.mode.ed{background:rgba(25,195,125,.14) !important;border-color:rgba(25,195,125,.55) !important;color:#6EE7B7 !important}
+.top .chip.mode.ro{background:rgba(245,158,11,.14) !important;border-color:rgba(245,158,11,.55) !important;color:#FCD38A !important}
+html[data-theme="light"] .top .chip.mode.ed{background:#E3F5EC !important;border-color:#1B8A57 !important;color:#1B8A57 !important}
+html[data-theme="light"] .top .chip.mode.ro{background:#FFF2DD !important;border-color:#B86500 !important;color:#8A5300 !important}
+.nosupport.closed{max-width:640px;margin:12vh auto;text-align:center}
+.nosupport.closed .btn{margin-top:14px}
+
+/* Productividad */
+.pkpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:0 0 12px}
+.pk{background:var(--t-panel);border:1px solid var(--t-line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;position:relative;overflow:hidden}
+.pk::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--t-blue)}
+.pk.ok::before{background:#19C37D}.pk.mid::before{background:#F59E0B}.pk.low::before{background:#E5484D}
+.pk small{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t-mut)}
+.pk b{font-size:28px;line-height:1.1;color:var(--t-ink);font-variant-numeric:tabular-nums}
+.pk span{font-size:12.5px;color:var(--t-mut)}
+.pc.ok{color:#1B8A57}.pc.mid{color:#B86500}.pc.low{color:#C53030}
+.ptab td,.ptab th{white-space:nowrap}
+.ptab tr.nogoal td{background:#F7F9FC}
+.t td.num,.t th.num{text-align:right;font-variant-numeric:tabular-nums}
+.dph{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}.dph h3{margin:0}.dph .sp{flex:1}
+.lg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#5D7084}.lg i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.lg.val i{background:#1E88FF}.lg.seq i{background:#8B5CF6}.lg.goal i{height:3px;background:#0A1A3A}
+.pchart{display:flex;align-items:flex-end;gap:6px;height:220px;padding:8px 4px 0;border-bottom:1px solid #D5DEEA;overflow-x:auto}
+.pcol{flex:1;min-width:34px;display:flex;flex-direction:column;align-items:center;height:100%}
+.pcol small{font-size:11px;color:#5D7084;padding:4px 0}
+.pbars{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center;gap:3px;position:relative}
+.pb{flex:1;max-width:22px;border-radius:5px 5px 0 0;position:relative;min-height:1px}
+.pb.val{background:linear-gradient(180deg,#4FA3FF,#1E6FE0)}.pb.seq{background:linear-gradient(180deg,#A78BFA,#7C3AED)}
+.pb span{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:10.5px;font-weight:700;color:#0A1A3A;white-space:nowrap}
+.pg{position:absolute;left:0;right:0;height:0;border-top:2px dashed #0A1A3A;opacity:.55;pointer-events:none}
+.pg.seq{border-top-color:#7C3AED}
+
+/* Configuración */
+.dpanel.cfg .input{min-width:0}
+.cfg-t td{vertical-align:middle}
+.cfg-t .input{height:34px}
+.cfg-t .input.num{width:90px}
+.cfg-t th{text-align:center}
+.days{display:flex;gap:3px;flex-wrap:nowrap}
+.days label{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:30px;border:1px solid #C9D4E3;border-radius:7px;font-size:12px;font-weight:700;color:#5D7084;cursor:pointer;user-select:none;background:#fff}
+.days label.on{background:#EAF3FF;border-color:#1E88FF;color:#1E5FD0}
+.days input{display:none}
+.cfg2{grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
+.dpanel .lbl{display:inline-flex;align-items:center;gap:8px;color:#0A1A3A}
+.tabs{display:flex;align-items:stretch}
+.tabs-r{margin-left:auto;display:flex;align-items:center;gap:8px;padding:0 14px;position:relative;z-index:2}
+.tabs .chip.mode{display:inline-flex;align-items:center;font-weight:800;letter-spacing:.06em;font-size:12px;cursor:pointer;border:1px solid;border-radius:999px;padding:6px 14px;white-space:nowrap}
+.tabs .chip.mode.ed{background:rgba(25,195,125,.14);border-color:rgba(25,195,125,.55);color:#6EE7B7}
+.tabs .chip.mode.ro{background:rgba(245,158,11,.14);border-color:rgba(245,158,11,.55);color:#FCD38A}
+html[data-theme="light"] .tabs .chip.mode.ed{background:#E3F5EC;border-color:#1B8A57;color:#1B8A57}
+html[data-theme="light"] .tabs .chip.mode.ro{background:#FFF2DD;border-color:#B86500;color:#8A5300}
+.tabs-r .btn.ghost{background:transparent;border:1px solid rgba(159,180,212,.45);color:inherit;border-radius:8px;height:32px;padding:0 12px;cursor:pointer}
+html[data-theme="light"] .tabs-r .btn.ghost{border-color:#C9DAF0;color:#0B2A5B;background:#fff}

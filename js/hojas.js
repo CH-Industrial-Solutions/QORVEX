@@ -86,7 +86,7 @@
     m.innerHTML = `
       <div class="ptitle"><h1>${title[0]} <small>${title[1]}</small></h1>
         <span class="muted">${D.files.length > 1 ? `${D.files.map(esc).join(' + ')} · ${D.files.length} archivos juntos` : `${esc(D.name)} · hoja <b>${esc(D.sheet)}</b>`} · todas las columnas y filas, tal como están en el Excel</span>
-        <span class="sp"></span>${role === 'val' ? '<button class="btn" id="hCompl" title="Agregar validación de otro archivo con las mismas columnas">⇪ Cargar validación complementaria</button><button class="btn" id="hDay">📅 Exportar por fecha</button>' : ''}<button class="btn" id="hExp">Exportar lo filtrado</button></div>
+        <span class="sp"></span>${role === 'val' ? '<button class="btn" id="hCompl" title="Agregar validación de otro archivo con las mismas columnas">⇪ Cargar validación complementaria</button><button class="btn" id="hDay">📅 Exportar por fecha</button>' : ''}<button class="btn" id="hDup" title="Agregar un job repetido autorizado (queda marcado como Duplicado)">＋ Agregar duplicado</button><button class="btn" id="hExp">Exportar lo filtrado</button></div>
       <div class="kpis">
         <div class="kpi"><span>Filas en la hoja</span><b>${fmtN(D.rows.length)}</b></div>
         <div class="kpi"><span>Mostrando</span><b id="hN">—</b></div>
@@ -140,6 +140,7 @@
     $('#hExp').onclick = () => exportRows(role);
     if ($('#hDay')) $('#hDay').onclick = () => exportByDate(role);
     if ($('#hCompl')) $('#hCompl').onclick = () => App.integrar.complement();
+    if ($('#hDup')) $('#hDup').onclick = () => App.dup.open(role);
     draw();
   }
 

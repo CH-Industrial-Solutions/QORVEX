@@ -11,11 +11,13 @@
     ['planes', 'DATA', 'Cruce de información'],
     ['dash', 'DASHBOARD', 'Material disponible'],
     ['pulls', 'PULLS', 'Lista de pulls'],
+    ['prod', 'PRODUCTIVIDAD', 'Turnos y personas'],
   ];
   const SEC = [    // secundarios (botones en la barra superior)
     ['val', 'VALIDATE', 'Excel de Validación completo'],
     ['seq', 'SEQUENCE', 'Excel de Secuencia completo'],
     ['files', 'ARCHIVOS', 'Archivos y carpeta de trabajo'],
+    ['config', 'CONFIG', 'Turnos, metas, supervisores y usuarios'],
   ];
   /* Íconos (SVG en línea, toman el color del texto) */
   const sv = (d, f) => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" ${f ? 'fill="currentColor" stroke="none"' : 'fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'}>${d}</svg>`;
@@ -37,7 +39,7 @@
     play: sv('<path d="M7 4.5v15l12.5-7.5z"/>', 1),
     bulb: sv('<path d="M12 2.5a6.5 6.5 0 0 0-3.8 11.8c.8.6 1.3 1.5 1.3 2.5V18h5v-1.2c0-1 .5-1.9 1.3-2.5A6.5 6.5 0 0 0 12 2.5z"/><rect x="9.5" y="19.3" width="5" height="2.2" rx="1"/>', 1),
   };
-  ICO.val = ICO.check; ICO.seq = ICO.flow; ICO.cube = ICO.pulls;
+  ICO.val = ICO.check; ICO.seq = ICO.flow; ICO.cube = ICO.pulls; ICO.prod = ICO.trend;
   const isLight = () => document.documentElement.dataset.theme === 'light';
   function setTheme(th) { document.documentElement.dataset.theme = th; try { localStorage.setItem('qorvex_theme', th); } catch (e) {} }
 
@@ -66,17 +68,18 @@
     const dirty = S.planesDirty || S.pullsDirty || Object.values(S.dirty || {}).some(Boolean);
     root.innerHTML = `
       <header class="top">
-        <div class="brand" id="bHome" style="cursor:pointer" title="Inicio"><img src="img/q-mark-${isLight() ? 'light' : 'dark'}.png" alt=""><div class="bt"><span class="bn">QORVE<i>X</i></span><small>Manufacturing Intelligence Engine</small></div><span class="ver">V 11.01.02</span></div>
+        <div class="brand" id="bHome" style="cursor:pointer" title="Inicio"><img src="img/q-mark-${isLight() ? 'light' : 'dark'}.png" alt=""><div class="bt"><span class="bn">QORVE<i>X</i></span><small>Manufacturing Intelligence Engine</small></div><span class="ver">V 12.00.00</span></div>
         <span class="sp"></span>
         <a class="btn ghost xlink" href="${App.LINKS.mobile}" target="_blank" rel="noopener" title="Abrir QORVEX MOBILE en otra pestaña">QORVEX MOBILE ↗</a>
         <button class="tsw" id="bTheme" title="Cambiar a modo ${isLight() ? 'BLACK' : 'WHITE'}" aria-label="Cambiar tema"><span class="knob"><svg class="moon" viewBox="0 0 32 32" aria-hidden="true"><path d="M19.5 6.5a10 10 0 1 0 6 16.9A11.5 11.5 0 0 1 19.5 6.5z" fill="currentColor"/><path d="M23 7.5l.9 2.1 2.1.9-2.1.9-.9 2.1-.9-2.1-2.1-.9 2.1-.9z" fill="currentColor"/><path d="M26.5 14.2l.5 1.2 1.2.5-1.2.5-.5 1.2-.5-1.2-1.2-.5 1.2-.5z" fill="currentColor"/></svg><svg class="sun" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="6.2" fill="currentColor"/><g stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M16 3.5v3.2M16 25.3v3.2M3.5 16h3.2M25.3 16h3.2M7.2 7.2l2.2 2.2M22.6 22.6l2.2 2.2M7.2 24.8l2.2-2.2M22.6 9.4l2.2-2.2"/></g></svg></span></button>
         <div class="secs">${SEC.map(([k, t, d]) => `<button class="sbtn ${TAB === k ? 'on' : ''}" data-t="${k}" title="${d}">${t}</button>`).join('')}</div>
         ${S.dir ? `<div class="chip" title="Carpeta de trabajo">📁 ${esc(S.dir.name)}</div>` : ''}
-        ${S.dir ? `<button class="btn ghost" id="bChange">Cambiar carpeta</button>` : ''}
-        <button class="btn save ${dirty ? 'on' : ''}" id="bSave" ${App.S.L.planes ? '' : 'disabled'}>${ICO.save}<span>Guardar en Excel${dirty ? ' •' : ''}</span></button>
+        ${S.dir ? `<button class="btn ghost" id="bChange" title="Cambiar carpeta de trabajo">Carpeta</button>` : ''}
+        ${App.lock.canEdit() || !App.lock.mode() ? `<button class="btn save ${dirty ? 'on' : ''}" id="bSave" ${App.S.L.planes && App.lock.canEdit() ? '' : 'disabled'}>${ICO.save}<span>Guardar${dirty ? ' •' : ''}</span></button>` : ''}
       </header>
       <nav class="tabs">
         ${MODS.map(([k, t, s]) => `<button class="tab ${TAB === k ? 'on' : ''}" data-t="${k}">${ICO[k] || ''}<span class="tl"><b>${t}${k === 'pulls' && S.pullsDirty ? ' •' : ''}${k === 'planes' && S.planesDirty ? ' •' : ''}</b><small>${s}</small></span></button>`).join('')}
+        ${App.lock.mode() ? `<span class="tabs-r"><button class="chip mode ${App.lock.canEdit() ? 'ed' : 'ro'}" id="bMode" title="Cambiar de modo (Editor / Consulta)">${App.lock.canEdit() ? `EDITOR · ${esc(App.lock.who())}` : 'CONSULTA · solo lectura'}</button><button class="btn ghost sm" id="bOut" title="Salir y liberar el modo Editor">Salir</button></span>` : ''}
       </nav>
       <main id="main"></main>
       <footer class="foot"><b>QORVEX</b> · CONNECT · VALIDATE · SEQUENCE · OPTIMIZE &nbsp;|&nbsp; © TODOS LOS DERECHOS RESERVADOS · Ing. Carlos Hernandez</footer>
@@ -84,11 +87,14 @@
     document.body.classList.toggle('fullview', TAB === 'planes' && PF.view === 'all' && !!S.result);
     $$('.tab,.sbtn').forEach((b) => (b.onclick = () => go(b.dataset.t)));
     if ($('#bChange')) $('#bChange').onclick = () => guardDirty().then((ok) => ok && App.connect(false));
-    $('#bSave').onclick = saveDialog;
+    if ($('#bSave')) $('#bSave').onclick = saveDialog;
+    if ($('#bMode')) $('#bMode').onclick = async () => { if (App.lock.canEdit() && (S.planesDirty || S.pullsDirty || Object.values(S.dirty || {}).some(Boolean)) && !(await App.confirmBox('Cambiar de modo', '<p>Hay cambios sin guardar. Si cambias de modo se pierden.</p>', 'Cambiar de todos modos', 'danger'))) return; await App.lock.release(); await App.lock.enter(); };
+    if ($('#bOut')) $('#bOut').onclick = async () => { if (App.lock.canEdit() && (S.planesDirty || S.pullsDirty || Object.values(S.dirty || {}).some(Boolean)) && !(await App.confirmBox('Salir', '<p>Hay cambios sin guardar. Si sales se pierden.</p>', 'Salir de todos modos', 'danger'))) return; App.lock.leave('out'); };
     $('#bHome').onclick = () => go('home');
     $('#bTheme').onclick = () => { setTheme(isLight() ? 'dark' : 'light'); render(); };
     ({ home: () => App.mods.home($('#main')), files: vFiles, planes: vPlanes, pulls: vPulls, dash: () => App.dash.render($('#main')),
-      val: () => App.hojas.render($('#main'), 'val'), seq: () => App.hojas.render($('#main'), 'seq') })[TAB]();
+      val: () => App.hojas.render($('#main'), 'val'), seq: () => App.hojas.render($('#main'), 'seq'),
+      prod: () => App.prod.render($('#main')), config: () => App.cfg.render($('#main')) })[TAB]();
   }
 
   async function guardDirty() {
@@ -116,7 +122,7 @@
     const opts = (sel) => `<option value="">— Sin asignar —</option>${S.files.map((f) => `<option ${f.name === sel ? 'selected' : ''}>${esc(f.name)}</option>`).join('')}`;
     m.innerHTML = `
       <div class="ptitle"><h1>ARCHIVOS <small>Fuentes de datos</small></h1><span class="muted">${fmtN(S.files.length)} archivos Excel en la carpeta</span><span class="sp"></span>
-        <button class="btn" id="bRefresh">Actualizar lista</button><button class="btn" id="bInteg" ${S.L.val || S.L.seq ? '' : 'disabled'} title="Agregar a Validación / Secuencia lo exportado desde QORVEX MOBILE sin carpeta">⇪ Integrar capturas exportadas</button><button class="btn primary" id="bLoad">Cargar archivos</button></div>
+        <button class="btn" id="bRefresh">Actualizar lista</button><button class="btn" id="bInteg" ${S.L.val || S.L.seq ? '' : 'disabled'} title="Agregar a Validación / Secuencia lo exportado desde QORVEX MOBILE sin carpeta">⇪ Integrar capturas exportadas</button><button class="btn" id="bDup" ${S.L.val || S.L.seq ? '' : 'disabled'} title="Agregar un job repetido autorizado (queda marcado como Duplicado)">＋ Agregar duplicado</button><button class="btn primary" id="bLoad">Cargar archivos</button></div>
       <div class="cards">${App.ROLES.map((r) => {
         const L = S.L[r.k];
         if (r.k === 'planes') return `<div class="fcard ${L ? 'ok' : ''}">
@@ -125,6 +131,17 @@
           <div class="fi muted small">Columnas por posición: A AOR · B Job · C LS · D Cia · … · Q Status · R Start Date</div>
           <div class="frow">${S.planesDirty ? '<span class="pill warn">Cambios sin guardar</span>' : ''}<span class="sp"></span><button class="btn sm primary" data-planes="1">Cargar Planes</button></div>
         </div>`;
+        if (r.txt) {
+          const devs = L ? [L, ...(S.X[r.k] || [])] : [], fl = (App.cap.files[r.k] || []);
+          return `<div class="fcard ${L ? 'ok' : ''}">
+          <div class="fh"><b>${r.t}</b><span class="tag w">TXT de las tabletas</span></div>
+          <div class="fi muted small">Lee todos los <b>${App.cap.PRE[r.k]}_EQUIPO_aaaa-mm.txt</b> de la carpeta. Cada tableta escribe solo los suyos; el Motor solo agrega en los de MOTOR.</div>
+          ${L ? `<table class="t mini"><thead><tr><th>Equipo</th><th>Archivos</th><th>Registros</th><th>Modificado</th></tr></thead><tbody>
+            ${devs.filter((x) => x.dev !== App.cap.MOTOR || x.files.length || x.t.rows.length).map((x) => `<tr><td><b>${esc(x.dev)}</b></td><td class="small">${x.files.map((n) => { const f = fl.find((y) => y.name === n); return `${esc(n)}${f ? ` <span class="muted">(${fmtN(f.n)} líneas)</span>` : ''}`; }).join('<br>') || '<span class="muted">—</span>'}</td><td class="num">${fmtN(x.t.rows.length)}${x.dirty ? ' <span class="pill warn">+ sin guardar</span>' : ''}</td><td class="small">${x.files.length ? App.fDT(x.lastModified) : '—'}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Aún no hay capturas en TXT.</td></tr>'}
+          </tbody></table>` : '<div class="fi muted">Se leen al presionar <b>Cargar archivos</b>.</div>'}
+          <div class="frow">${(S.dirty || {})[r.k] ? '<span class="pill warn">Cambios sin guardar</span>' : ''}<span class="sp"></span><button class="btn sm" data-reload="${r.k}">↻ ${L ? 'Actualizar' : 'Cargar'}</button></div>
+        </div>`;
+        }
         const X = r.multi ? (S.X[r.k] || []) : [];
         return `<div class="fcard ${L ? 'ok' : ''}">
           <div class="fh"><b>${r.t}</b>${r.write ? '<span class="tag w">se actualiza</span>' : r.multi ? '<span class="tag w">lee varios archivos</span>' : '<span class="tag">solo lectura</span>'}${r.optional ? '<span class="tag">opcional</span>' : ''}</div>
@@ -148,6 +165,7 @@
     $('#bRefresh').onclick = async () => { await App.refreshList(); render(); };
     $('#bLoad').onclick = () => guardDirty().then((ok) => ok && App.loadAll());
     $('#bInteg').onclick = () => App.integrar.open();
+    $('#bDup').onclick = () => App.dup.open('val');
     const xDo = async (role, i, name) => { if (!S.L[role]) { const l = S.xFile[role] = S.xFile[role] || []; if (name === null) l.splice(i, 1); else if (i == null) l.push(name); else l[i] = name; render(); return; } try { await App.setExtra(role, i, name); } catch (e) { toast(e.message, 'err', 6000); } render(); };
     $$('select[data-xrole]').forEach((s) => (s.onchange = () => { if (!s.value) return xDo(s.dataset.xrole, +s.dataset.xi, null); xDo(s.dataset.xrole, +s.dataset.xi, s.value); }));
     $$('[data-xr]').forEach((b) => (b.onclick = () => xDo(b.dataset.xr, +b.dataset.xi, S.xFile[b.dataset.xr][+b.dataset.xi])));
@@ -160,7 +178,7 @@
       const pend = (S.dirty || {})[role] || (role === 'pulls' && S.pullsDirty) || (role === 'planes' && S.planesDirty);
       if (pend && !(await App.confirmBox('Actualizar archivo', `<p>${esc(r.t)} tiene cambios sin guardar. Si lo actualizas desde el disco se perderán.</p>`, 'Actualizar de todos modos', 'danger'))) return;
       try {
-        await App.busy(`Leyendo ${S.roleFile[role]}…`, async () => { await App.refreshList(); await App.loadRole(role); });
+        await App.busy(`Leyendo ${S.roleFile[role] || r.t}…`, async () => { await App.refreshList(); await App.loadRole(role); });
         S.edits = S.edits.filter((x) => x.role !== role);
         if (S.result && App.ready()) App.execute(true);
         toast(`${r.t} actualizado desde el disco`, 'ok');
@@ -424,15 +442,17 @@
         <div class="pager"><span>${fmtN(rows.length)} de ${fmtN(S.pulls.length)} pulls</span></div>`
         : `<div class="empty">${S.pulls.length ? 'Ningún pull coincide con los filtros.' : 'Aún no hay pulls. Agrégalos arriba o pégalos desde Excel.'}</div>`;
       $$('#lt input.cell').forEach((inp) => (inp.onchange = () => {
+        if (!App.lock.need()) return render();
         const p = S.pulls.find((x) => x.id === +inp.closest('tr').dataset.id), f = inp.dataset.f;
         let v = inp.value.trim();
         if (f === 'job') { const n = normKey(v); if (!n) { toast('El job no puede quedar vacío', 'warn'); inp.value = show(p.job); return; } v = /^\d+$/.test(n) ? Number(n) : v.toUpperCase(); }
         if (f === 'cont') { if (!v) { toast('El contenedor no puede quedar vacío', 'warn'); inp.value = show(p.cont); return; } v = v.toUpperCase(); }
         p[f] = v; App.pullsChanged(); render();
       }));
-      $$('[data-del]').forEach((b) => (b.onclick = () => { S.pulls = S.pulls.filter((x) => x.id !== +b.dataset.del); App.pullsChanged(); render(); }));
+      $$('[data-del]').forEach((b) => (b.onclick = () => { if (!App.lock.need()) return; S.pulls = S.pulls.filter((x) => x.id !== +b.dataset.del); App.pullsChanged(); render(); }));
     };
     const add = () => {
+      if (!App.lock.need()) return;
       const j = $('#aj').value, c = $('#ac').value;
       if (!normKey(j)) return toast('Escribe el job', 'warn'), $('#aj').focus();
       if (!c.trim()) return toast('Escribe el contenedor', 'warn'), $('#ac').focus();
@@ -441,14 +461,14 @@
     };
     $('#bAdd').onclick = add;
     ['#aj', '#ac', '#am'].forEach((s, i, a) => ($(s).onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); i < 2 ? $(a[i + 1]).focus() : add(); } }));
-    $('#bPaste').onclick = pasteDialog;
+    $('#bPaste').onclick = () => App.lock.need() && pasteDialog();
     let qt;
     $('#lq').oninput = (e) => { clearTimeout(qt); qt = setTimeout(() => { LF.q = e.target.value; draw(); }, 200); };
     $('#li').onchange = (e) => { LF.inPlanes = e.target.value; draw(); };
     $('#lc').onchange = (e) => { LF.com = e.target.value; draw(); };
     $('#lr').onclick = () => { Object.assign(LF, { q: '', inPlanes: '', com: '' }); render(); };
     $('#bDelF').onclick = async () => {
-      const rows = filt(); if (!rows.length) return;
+      const rows = filt(); if (!rows.length || !App.lock.need()) return;
       if (!(await App.confirmBox('Eliminar pulls', `<p>Se quitarán <b>${rows.length}</b> pulls de la lista (se reflejará en el Excel al guardar).</p>`, 'Eliminar', 'danger'))) return;
       const ids = new Set(rows.map((p) => p.id)); S.pulls = S.pulls.filter((p) => !ids.has(p.id)); App.pullsChanged(); render();
     };
@@ -492,10 +512,10 @@
       const ed = S.edits.filter((x) => x.role === k), imp = ed.filter((x) => x.kind === 'import').reduce((a, x) => a + x.n, 0), n = ed.length - ed.filter((x) => x.kind === 'import').length, on = !!S.dirty[k];
       const dirtyF = App.srcs(k).filter((L) => L.dirty).map((L) => L.name);
       if (App.corr.count(k)) dirtyF.push(App.corr.NAME);
-      items.push({ k, t: `${(dirtyF.length ? dirtyF : [S.L[k].name]).join(' + ')} (${App.edit.FILE_N[k]})`, on, dis: !on, why: on ? [n && `${n} edición(es)`, imp && `${imp} filas integradas`].filter(Boolean).join(' · ') : 'Sin cambios: no se actualiza' });
+      items.push({ k, t: `${(dirtyF.length ? dirtyF.map((n) => (/_MOTOR$/.test(n) ? `${n}_${App.txt.monthTag()}.txt` : n)) : [S.L[k].name]).join(' + ')} (${App.edit.FILE_N[k]})`, on, dis: !on, why: on ? [n && `${n} edición(es)`, imp && `${imp} filas integradas`].filter(Boolean).join(' · ') : 'Sin cambios: no se actualiza' });
     });
     const sel = await App.modal({ title: 'Guardar en los archivos originales', body: `
-      <p>Se reemplazará el contenido de los archivos marcados. Antes se valida todo; si algo falla, el archivo no se toca.</p>
+      <p>Planes y Pulls (Excel) se reemplazan con su versión validada. En Validación y Secuencia (TXT) <b>solo se agregan líneas al final</b>: las correcciones van a Correcciones_Motor.txt y lo integrado a los archivos _MOTOR. Si algo falla, el archivo no se toca.</p>
       <div class="opt-list">${items.map((it) => `<label class="opt ${it.dis ? 'dis' : ''}"><input type="checkbox" value="${it.k}" ${it.on && !it.dis ? 'checked' : ''} ${it.dis ? 'disabled' : ''}><span>${App.esc(it.t)}</span><small>${it.why}</small></label>`).join('')}</div>
       <label class="chk big"><input type="checkbox" id="bk" checked> Crear copia de seguridad antes de sobrescribir (en la subcarpeta <b>${App.fs.BACKUP_DIR}</b>)</label>
       <div class="note">Cierra estos archivos en Excel antes de continuar. Se conservan los datos, las fórmulas y las demás hojas; <b>no se garantiza</b> conservar formatos avanzados, formato condicional, validaciones, tablas o gráficas. Las celdas SHORTAGE quedan en rojo pastel.</div>`,

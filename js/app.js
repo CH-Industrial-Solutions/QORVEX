@@ -6,8 +6,8 @@
 
   const ROLES = [
     { k: 'planes', t: 'Planes generales', spec: 'planes', guess: /plan/i, write: true, manual: true },
-    { k: 'val', t: 'Validación', spec: 'captura', guess: /valid/i, multi: true },
-    { k: 'seq', t: 'Secuencia', spec: 'captura', guess: /secu/i, multi: true },
+    { k: 'val', t: 'Validación', spec: 'captura', guess: /valid/i, multi: true, txt: true },
+    { k: 'seq', t: 'Secuencia', spec: 'captura', guess: /secu/i, multi: true, txt: true },
     { k: 'pulls', t: 'Pulls', spec: 'pulls', guess: /pull/i, write: true, optional: true },
   ];
 
@@ -47,6 +47,7 @@
       await refreshList();
       const mem = (await App.store.get(`roles:${dir.name}`)) || {};
       ROLES.forEach((r) => {
+        if (r.txt) { S.roleFile[r.k] = ''; return; } // Validación y Secuencia: TXT de las tabletas (capturas.js)
         const keep = mem[r.k] && S.files.some((f) => f.name === mem[r.k]);
         // Validación/Secuencia: el principal es el que no es de tableta (Validacion.xlsx); los _TAB se suman solos
         const cand = S.files.filter((f) => r.guess.test(f.name) && !/^qorvex/i.test(f.name)).sort((a, b) => a.name.length - b.name.length);
@@ -60,6 +61,10 @@
           S.xFile[r.k] = list; S.xOff[r.k] = off;
         }
       });
+      await App.cfg.load();
+      await App.lock.enter();
+      // carpeta nueva: se crea Config_QORVEX.json de cero (turnos por defecto, sin supervisores ni usuarios)
+      if (!App.cfg.loaded && App.lock.canEdit()) { try { await App.cfg.save(App.cfg.get()); toast('Carpeta nueva: se creó Config_QORVEX.json. Da de alta supervisores, usuarios y metas en CONFIG.', 'ok', 7000); } catch (e) { toast(`No se pudo crear Config_QORVEX.json: ${e.message}`, 'warn', 6000); } }
       if (!stay) App.ui.go('files');
       return true;
     } catch (e) {
@@ -72,6 +77,12 @@
   /* ---------- Carga ---------- */
   async function loadRole(role, forceSheet = false) {
     const r = ROLES.find((x) => x.k === role);
+    if (r.txt) {
+      await App.cap.loadRole(role);
+      // correcciones del Motor a capturas de las tabletas (Correcciones_Motor.txt), aplicadas en memoria
+      try { await App.corr.load(); App.corr.applyTo(role); } catch (e) { console.warn(e); toast(`${App.corr.NAME}: ${e.message}`, 'warn', 6000); }
+      return;
+    }
     const name = S.roleFile[role];
     if (!name) { delete S.L[role]; return; }
     const f = S.files.find((x) => x.name === name);
@@ -135,14 +146,14 @@
   }
 
   async function loadAll() {
-    const miss = ROLES.filter((r) => !r.optional && !r.manual && !S.roleFile[r.k]);
+    const miss = ROLES.filter((r) => !r.optional && !r.manual && !r.txt && !S.roleFile[r.k]);
     if (miss.length) return toast(`Asigna el archivo de: ${miss.map((r) => r.t).join(', ')}`, 'warn');
     const names = ROLES.map((r) => S.roleFile[r.k]).filter(Boolean);
     if (new Set(names).size !== names.length) return toast('Un mismo archivo está asignado a dos funciones', 'warn');
     await saveRoles();
     const errs = [];
-    await App.busy('Leyendo archivos Excel…', async () => {
-      await refreshList();
+    await App.busy('Leyendo archivos…', async () => {
+      await refreshList(); await App.cfg.load();
       for (const r of ROLES) { if (r.manual) continue; try { await loadRole(r.k); } catch (e) { errs.push(e.message); delete S.L[r.k]; } }
     });
     if (errs.length) await App.modal({ title: 'Algunos archivos no se cargaron', body: `<ul class="errs">${errs.map((e) => `<li>${App.esc(e)}</li>`).join('')}</ul>` });
@@ -199,6 +210,7 @@
   }
 
   async function selectPlanes() {
+    if (!App.lock.need()) return false;
     if (typeof window.showOpenFilePicker !== 'function') { toast('Este navegador no permite elegir archivos sueltos; usa Edge o Chrome', 'err'); return false; }
     let fh;
     try { [fh] = await window.showOpenFilePicker({ id: 'qorvex-planes', startIn: 'downloads', types: [{ description: 'Libro de Excel', accept: { 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx', '.xlsm', '.xls'] } }] }); }
@@ -256,7 +268,7 @@
   /** Inicio rápido desde INICIO: conecta la carpeta, carga los archivos y ejecuta el cruce */
   async function quickStart(useSaved) {
     if (!S.dir && !(await connect(useSaved, true))) return App.ui.render();
-    const miss = ROLES.filter((r) => !r.optional && !r.manual && !S.roleFile[r.k]);
+    const miss = ROLES.filter((r) => !r.optional && !r.manual && !r.txt && !S.roleFile[r.k]);
     if (miss.length) { toast(`No se reconoció el archivo de: ${miss.map((r) => r.t).join(', ')}. Asígnalo en Archivos.`, 'warn', 6000); return App.ui.go('files'); }
     if (!S.L.val || !S.L.seq) await loadAll();
     else if (!S.L.planes) await planesDialog();
@@ -293,6 +305,7 @@
     return wb;
   }
   async function createPullsFile() {
+    if (!App.lock.need()) return;
     if (S.files.some((f) => /^pulls\.xlsx$/i.test(f.name))) return toast('Ya existe Pulls.xlsx en la carpeta; asígnalo en la lista', 'warn');
     try {
       const bytes = App.xl.serialize(pullsWorkbookFresh(), 'Pulls.xlsx');
@@ -358,6 +371,7 @@
 
   /* ---------- Guardado directo en los originales ---------- */
   async function save(targets, doBackup) {
+    if (!App.lock.need()) return [];
     const results = [];
     // Primero las fuentes y al final Planes, para que Planes refleje lo ya guardado
     targets = ['val', 'seq', 'pulls', 'planes'].filter((r) => targets.includes(r));
@@ -373,8 +387,18 @@
        const multi = role === 'val' || role === 'seq';
        let Fs = multi ? srcs(role).filter((L) => L.dirty) : [S.L[role]];
        let reload = false;
-       if (multi && !Fs.length) { if (corrOk) reload = true; else Fs = [S.L[role]]; }
+       if (multi && !Fs.length) { if (corrOk) reload = true; else if (!S.L[role].txt) Fs = [S.L[role]]; }
        for (const F of Fs) {
+        if (F.txt) { // capturas integradas por el Motor → Validacion_MOTOR_aaaa-mm.txt (solo se agregan líneas)
+          const res = { role, name: F.name, ok: false, msg: '' };
+          try {
+            const w = await App.cap.writeNew(role);
+            const edR = S.edits.filter((x) => x.role === role && x.kind === 'import');
+            S.edits = S.edits.filter((x) => !edR.includes(x));
+            res.ok = true; res.name = w.name || F.name; res.msg = `${App.fmtN(w.n)} filas integradas al final`; reload = true;
+          } catch (e) { res.msg = App.fs.explain(e); }
+          results.push(res); continue;
+        }
         const res = { role, name: F.name, ok: false, msg: '', backup: '' };
         try {
           // 1) ¿Alguien modificó el archivo desde que se cargó?

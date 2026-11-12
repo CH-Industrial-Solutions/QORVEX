@@ -1,9 +1,9 @@
 /* =====================================================================
-   correcciones.js — Correcciones_Motor.xlsx
-   Los archivos de las tabletas (Validacion_TAB1.xlsx, Secuencia_TAB2.xlsx…)
+   correcciones.js — Correcciones_Motor.txt (separado por tabulador)
+   Los archivos de las tabletas (Validacion_TAB1_2026-11.txt, Secuencia_TAB2_…)
    SOLO los escribe QORVEX MOBILE. Cuando el Motor corrige una captura que
    vive en uno de ellos, NO toca ese archivo: agrega una fila en su propio
-   archivo Correcciones_Motor.xlsx (archivo, ID, campo, valor anterior y
+   archivo Correcciones_Motor.txt (archivo, ID, campo, valor anterior y
    nuevo). Al cargar, el Motor aplica esas correcciones en memoria encima
    de lo que capturaron las tabletas. Así nunca hay dos equipos escribiendo
    el mismo archivo y OneDrive/SharePoint no genera copias en conflicto.
@@ -11,7 +11,7 @@
    ===================================================================== */
 (function (App) {
   const { normTxt, pad } = App;
-  const NAME = 'Correcciones_Motor.xlsx', SHEET = 'Correcciones';
+  const NAME = 'Correcciones_Motor.txt';
   const HEAD = ['Fecha', 'Hora', 'Tipo', 'Archivo', 'ID', 'Fila', 'Job', 'Componente', 'Campo', 'Valor anterior', 'Valor nuevo', 'Equipo'];
   const FIELD = { contenedor: 'cont' };            // Campo (texto) → columna de captura
   const TIPO = { val: 'Validación', seq: 'Secuencia' };
@@ -21,21 +21,14 @@
   const idCol = (L) => L.t.headers.map(normTxt).indexOf('id');
   const idOf = (L, row) => { const i = idCol(L); return i >= 0 && row.v[i] != null && row.v[i] !== '' ? row.v[i] : ''; };
 
-  /** Lee Correcciones_Motor.xlsx de la carpeta (si existe) */
+  /** Lee Correcciones_Motor.txt de la carpeta (si existe) */
   async function load() {
     C.rows = []; C.file = null;
-    const f = (App.S.files || []).find((x) => x.name.toLowerCase() === NAME.toLowerCase());
-    if (!f) return;
-    const raw = await App.fs.readFile(f.handle);
-    const wb = App.xl.readWorkbook(raw.bytes, f.name);
-    const ws = wb.Sheets[SHEET] || wb.Sheets[wb.SheetNames[0]];
-    const aoa = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null });
-    const H = (aoa[0] || []).map(normTxt), at = (r, h) => r[H.indexOf(normTxt(h))];
-    C.rows = aoa.slice(1).filter((r) => (r || []).some((v) => v != null && v !== '')).map((r) => ({
-      fecha: at(r, 'Fecha'), hora: at(r, 'Hora'), tipo: at(r, 'Tipo'), file: at(r, 'Archivo'), id: at(r, 'ID'), fila: at(r, 'Fila'),
-      job: at(r, 'Job'), comp: at(r, 'Componente'), campo: at(r, 'Campo'), antes: at(r, 'Valor anterior'), despues: at(r, 'Valor nuevo'), equipo: at(r, 'Equipo'),
-    }));
-    C.file = { handle: f.handle, lastModified: raw.lastModified, aoa };
+    const raw = await App.txt.readOpt(App.S.dir, NAME);
+    if (!raw) return;
+    const P = App.txt.parse(raw.text);
+    C.rows = P.rows.map((r) => { const o = App.txt.objOf(P.head, r); return { fecha: o.fecha, hora: o.hora, tipo: o.tipo, file: o.archivo, id: o.id, fila: o.fila, job: o.job, comp: o.componente, campo: o.campo, antes: o.valoranterior, despues: o.valornuevo, equipo: o.equipo }; });
+    C.file = { lastModified: raw.lastModified };
   }
 
   /** Aplica en memoria las correcciones guardadas + las pendientes a las filas de las tabletas */
@@ -66,45 +59,23 @@
     C.pending.push({
       fecha: `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`, hora: `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,
       tipo: TIPO[role], file: L.name, id: idOf(L, row), fila: row.r + 1, job: info.job, comp: info.comp, campo: 'Contenedor',
-      antes: antes ?? '', despues: v ?? '', equipo: 'QORVEX (Motor)',
+      antes: antes ?? '', despues: v ?? '', equipo: `QORVEX (Motor)${App.lock && App.lock.who() ? ' · ' + App.lock.who() : ''}`,
     });
   }
   const count = (role) => C.pending.filter((c) => !role || roleOf(c.tipo) === role).length;
 
-  /** Escribe las correcciones pendientes al final de Correcciones_Motor.xlsx (lo crea si no existe) */
-  async function save(doBackup) {
+  /** Agrega las correcciones pendientes al final de Correcciones_Motor.txt (lo crea si no existe) */
+  async function save() {
     const res = { role: 'corr', name: NAME, ok: false, msg: '', backup: '' };
     if (!C.pending.length) return null;
-    const S = App.S;
     try {
-      if (C.file) {
-        const lm = await App.fs.lastModified(C.file.handle);
-        if (lm !== C.file.lastModified) throw new Error('El archivo se modificó fuera de esta página después de cargarlo. Vuelve a cargar los archivos.');
-      }
-      if (!(await App.fs.ensurePermission(S.dir))) throw new Error('No se autorizó la escritura en la carpeta.');
-      const old = C.file ? C.file.aoa.slice(1).filter((r) => (r || []).some((v) => v != null && v !== '')) : [];
-      const H0 = C.file && C.file.aoa[0] && C.file.aoa[0].some((v) => v != null) ? C.file.aoa[0] : HEAD;
-      const Hn = H0.map(normTxt);
-      const line = (c) => { const m = { fecha: c.fecha, hora: c.hora, tipo: c.tipo, archivo: c.file, id: c.id, fila: c.fila, job: c.job, componente: c.comp, campo: c.campo, valoranterior: c.antes, valornuevo: c.despues, equipo: c.equipo }; return Hn.map((h) => (m[h] ?? '')); };
-      const ws = XLSX.utils.aoa_to_sheet([H0, ...old, ...C.pending.map(line)]);
-      H0.forEach((_, c) => { const cell = ws[XLSX.utils.encode_cell({ r: 0, c })]; if (cell) cell.s = { font: { bold: true, color: { rgb: 'FFFFFF' } }, fill: { patternType: 'solid', fgColor: { rgb: '0A1A3A' } } }; });
-      ws['!cols'] = H0.map((h) => ({ wch: Math.max(10, String(h).length + 4) }));
-      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, SHEET);
-      const bytes = App.xl.serialize(wb, NAME);
-      // verificación: lo anterior se conserva completo y se suman solo las nuevas
-      const back = XLSX.utils.sheet_to_json(App.xl.readWorkbook(bytes, NAME).Sheets[SHEET], { header: 1, defval: null }).slice(1).filter((r) => (r || []).some((v) => v != null && v !== ''));
-      if (back.length !== old.length + C.pending.length) throw new Error(`Verificación: se esperaban ${old.length + C.pending.length} correcciones y el archivo generado tiene ${back.length}.`);
-      if (C.file) {
-        if (doBackup) { const cur = await App.fs.readFile(C.file.handle); res.backup = await App.fs.backup(S.dir, NAME, cur.bytes); }
-        await App.fs.writeFile(C.file.handle, bytes);
-      } else await App.fs.createFile(S.dir, NAME, bytes);
+      if (!(await App.fs.ensurePermission(App.S.dir))) throw new Error('No se autorizó la escritura en la carpeta.');
+      const lines = C.pending.map((c) => App.txt.toLine([c.fecha, c.hora, c.tipo, c.file, c.id, c.fila, c.job, c.comp, c.campo, c.antes, c.despues, c.equipo]));
+      await App.txt.append(App.S.dir, NAME, HEAD, lines);
       res.ok = true; res.msg = `${App.fmtN(C.pending.length)} corrección(es) agregadas al final · los archivos de las tabletas no se tocaron`;
       C.pending = [];
-      await App.refreshList(); await load();
-    } catch (e) {
-      res.msg = App.fs.explain(e);
-      if (res.backup) { await App.fs.removeBackup(S.dir, res.backup); res.backup = ''; }
-    }
+      await load();
+    } catch (e) { res.msg = App.fs.explain(e); }
     return res;
   }
 

@@ -80,6 +80,7 @@
   }
 
   function open(x, k, label) {
+    if (!App.lock.need()) return;
     const S = App.S;
     if (!S.result) return;
     const p = plan(x, k);

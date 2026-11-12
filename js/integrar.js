@@ -47,7 +47,7 @@
   }
 
   /* ---------- IDs: cada archivo agrega en SU rango (Principal 1…, TAB1 1000001…, TAB2 2000001…) ---------- */
-  const tabOf = (name) => ((String(name).match(/_(TAB\w*)\.xls/i) || [])[1] || '').toUpperCase();
+  const tabOf = (name) => ((String(name).match(/_(TAB\w*)(?:\.|_|$)/i) || [])[1] || '').toUpperCase();
   function nextIdFor(L) {
     const tab = tabOf(L.name), m = tab.match(/^TAB(\d{1,3})$/), base = m ? Number(m[1]) * 1e6 : 0, top = m ? base + 1e6 : 1e6;
     let max = base;
@@ -91,6 +91,7 @@
 
   async function open() {
     const S = App.S;
+    if (!App.lock.need()) return;
     if (!S.L.val && !S.L.seq) return toast('Primero carga los archivos de Validación y Secuencia', 'warn');
     // ¿En qué archivo se agregan? (si hay tabletas, se elige)
     let dest = { val: S.L.val, seq: S.L.seq };
@@ -140,8 +141,12 @@
   const core = (a) => { const o = trimTail(a); if (o[o.length - 1] === 'id') o.pop(); return o; };
   async function complement() {
     const S = App.S;
+    if (!App.lock.need()) return;
     if (!S.L.val) return toast('Primero carga el archivo de Validación', 'warn');
-    const L = S.L.val, HP = core(L.t.headers.map(normTxt));
+    const L = S.L.val;
+    // columnas de captura de QORVEX MOBILE (con o sin Supervisor, ID opcional al final)
+    const HP = ['Fecha', 'Hora', 'Turno', 'Tipo', 'Job', 'Contenedor', 'Componente', 'Placas', 'Lote', 'No. Empleado', 'Nombre', 'Supervisor', 'Editado'].map(normTxt);
+    const HP0 = HP.filter((h) => h !== 'supervisor');
     const CK = ['SWCH', 'SWGDE', 'KEY', 'BCM', 'CLUSTER', 'ARNES'];
     const sel = await App.modal({ title: 'Cargar validación complementaria', wide: true, body: `
       <p>Se agregan al final del archivo principal de Validación las filas que aún no existen (se compara contra todos los archivos de Validación). No se borra ni se cambia nada.</p>
@@ -150,7 +155,7 @@
         <label>Archivo de Excel<input class="input" type="file" id="ccF" accept=".xlsx,.xlsm,.xls"></label>
         <label>Agregar en${destSel('val', 'ccD')}</label>
       </div>
-      <div class="note" style="margin-top:12px"><b>Requisitos:</b> mismas columnas que Validación, en el mismo orden (${trimTail(L.t.headers.map((h) => String(h ?? '').trim())).map(esc).join(' · ')}) y todas las filas del componente elegido. Si algo no coincide, el archivo se rechaza completo.</div>`,
+      <div class="note" style="margin-top:12px"><b>Requisitos:</b> las columnas de captura de QORVEX MOBILE, en el mismo orden (Fecha · Hora · Turno · Tipo · Job · Contenedor · Componente · Placas · Lote · No. Empleado · Nombre · Supervisor · Editado, ID opcional; también se acepta sin Supervisor) y todas las filas del componente elegido. Si algo no coincide, el archivo se rechaza completo.</div>`,
       buttons: [{ t: 'Cancelar', v: null }, { t: 'Revisar y agregar', cls: 'primary', fn: (el) => { const f = $('#ccF', el).files[0]; if (!f) { toast('Elige el archivo', 'warn'); return false; } return { c: $('#ccC', el).value, f, L: destOf('val', el, 'ccD') }; } }] });
     if (!sel) return;
     let res;
@@ -165,7 +170,7 @@
           if (hi < 0) return;
           sheets++;
           const head = aoa[hi].map(normTxt), hc = core(head);
-          if (hc.join('|') !== HP.join('|')) { bad.push(`Hoja “${sn}”: las columnas no coinciden.<br><small>Validación: ${HP.join(' · ')}<br>Archivo: ${hc.join(' · ') || '(vacío)'}</small>`); return; }
+          if (hc.join('|') !== HP.join('|') && hc.join('|') !== HP0.join('|')) { bad.push(`Hoja “${sn}”: las columnas no coinciden.<br><small>Validación: ${HP.join(' · ')}<br>Archivo: ${hc.join(' · ') || '(vacío)'}</small>`); return; }
           const body = aoa.slice(hi + 1).filter((r) => (r || []).some((v) => v != null && String(v).trim() !== '')).map((r) => { const o = {}; head.forEach((h, i) => { if (h) o[h] = r[i]; }); return o; });
           const other = body.filter((o) => App.normComp(o.componente) !== sel.c);
           if (other.length) { const ej = [...new Set(other.map((o) => String(o.componente ?? '(vacío)')))].slice(0, 3).join(', '); bad.push(`Hoja “${sn}”: ${fmtN(other.length)} de ${fmtN(body.length)} filas no son ${App.COMP_N[sel.c]} (traen: ${esc(ej)}).`); return; }
